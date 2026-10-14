@@ -1,9 +1,9 @@
-import { parseEventsParam } from './bridge.js?v=4';
-import { buildBriefing } from './briefing.js?v=4';
-import { createStore } from './store.js?v=4';
-import { fetchWeather } from './weather.js?v=4';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=4';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=4';
+import { parseEventsParam } from './bridge.js?v=5';
+import { buildBriefing } from './briefing.js?v=5';
+import { createStore } from './store.js?v=5';
+import { fetchWeather } from './weather.js?v=5';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=5';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -44,6 +44,18 @@ const tomorrow = () => {
 };
 
 const state = { weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
+
+// Termine kommen nur über den Kurzbefehl in der Adresse. Für den Tag merken, damit das Symbol sie auch zeigt.
+if (params.has('events')) {
+  write('planer.events', JSON.stringify({ date: today(), events: state.events }));
+} else {
+  try {
+    const cached = JSON.parse(read('planer.events') || 'null');
+    if (cached?.date === today() && Array.isArray(cached.events)) state.events = cached.events;
+  } catch {
+    // kaputter Zwischenspeicher: ohne Termine weitermachen
+  }
+}
 
 function currentBriefing() {
   return buildBriefing({
