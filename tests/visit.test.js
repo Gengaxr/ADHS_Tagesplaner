@@ -69,16 +69,14 @@ test('fitCount zählt, wie viele Schritte in die Zeit passen, mindestens einer',
   assert.equal(fitCount([], 20), 0);
 });
 
-test('shortcutTimerUrl startet den Kurzbefehl "Besuch-Timer N" und kehrt zur Seite zurück', () => {
-  const url = shortcutTimerUrl(20, 'https://example.github.io/app/');
-  assert.ok(url.startsWith('shortcuts://x-callback-url/run-shortcut?'));
-  const q = new URLSearchParams(url.split('?')[1]);
-  assert.equal(q.get('name'), 'Besuch-Timer 20');
-  assert.equal(q.get('x-success'), 'https://example.github.io/app/');
+test('shortcutTimerUrl startet den Kurzbefehl "Besuch-Timer N"', () => {
+  const url = shortcutTimerUrl(20);
+  assert.ok(url.startsWith('shortcuts://run-shortcut?'));
+  assert.equal(new URLSearchParams(url.split('?')[1]).get('name'), 'Besuch-Timer 20');
   assert.equal(url.includes('+'), false);
 });
 
 test('shortcutTimerUrl gibt null zurück, wenn es keinen Kurzbefehl für die Minuten gibt', () => {
-  assert.equal(shortcutTimerUrl(25, 'https://example.github.io/app/'), null);
+  assert.equal(shortcutTimerUrl(25), null);
   assert.deepEqual(TIMER_MINUTES, [10, 20, 30, 45, 60]);
 });

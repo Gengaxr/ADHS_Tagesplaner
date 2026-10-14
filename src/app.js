@@ -1,14 +1,14 @@
-import { parseEventsParam } from './bridge.js?v=12';
-import { buildBriefing } from './briefing.js?v=12';
-import { createStore } from './store.js?v=12';
-import { fetchWeather } from './weather.js?v=12';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=12';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=12';
-import { buildClosing, isFeierabendTime } from './closing.js?v=12';
-import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=12';
+import { parseEventsParam } from './bridge.js?v=13';
+import { buildBriefing } from './briefing.js?v=13';
+import { createStore } from './store.js?v=13';
+import { fetchWeather } from './weather.js?v=13';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=13';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=13';
+import { buildClosing, isFeierabendTime } from './closing.js?v=13';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=13';
 import {
   DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount, shortcutTimerUrl,
-} from './visit.js?v=12';
+} from './visit.js?v=13';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -504,8 +504,8 @@ function beginVisit(minutes) {
   clearInterval(state.visitTick);
   state.visitTick = setInterval(updateVisitCountdown, 500);
   render();
-  const timerUrl = read('planer.visitTimer') === '1' ? shortcutTimerUrl(minutes, location.origin + location.pathname) : null;
-  // Der Kurzbefehl startet den iPhone-Timer und bringt dich zur Seite zurück; der Besuch ist bereits gespeichert
+  const timerUrl = read('planer.visitTimer') === '1' ? shortcutTimerUrl(minutes) : null;
+  // Der Kurzbefehl startet den iPhone-Timer und öffnet die Seite danach wieder; der Besuch ist bereits gespeichert
   if (timerUrl) location.href = timerUrl;
 }
 
