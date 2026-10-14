@@ -57,7 +57,7 @@ Safari zeigt der Seite nur die Standardstimme. Ein Kurzbefehl kann dagegen die g
 2. Öffne ihn auf dem iPhone, tippe in der Aktion **Text sprechen** auf den Pfeil, wähle bei **Stimme** deine Premium-Stimme und tippe auf Fertig.
 3. Auf der Seite unten bei **Stimme** den Haken bei "Mit dem Kurzbefehl Briefing vorlesen" setzen und **Speichern**.
 
-Danach startet der Knopf "Vorlesen" diesen Kurzbefehl. Safari fragt einmal, ob es Kurzbefehle öffnen darf. Der Kurzbefehl liest das Briefing vor und öffnet danach die Seite wieder.
+Danach startet der Knopf "Vorlesen" diesen Kurzbefehl. Safari fragt einmal, ob es Kurzbefehle öffnen darf. Der Kurzbefehl öffnet zuerst die Seite und liest das Briefing dann vor, du siehst also den Plan, während gesprochen wird.
 
 ## 6. Feierabend-Check (optional, ab 23 Uhr erinnern)
 
