@@ -1,14 +1,18 @@
-import { parseEventsParam } from './bridge.js?v=13';
-import { buildBriefing } from './briefing.js?v=13';
-import { createStore } from './store.js?v=13';
-import { fetchWeather } from './weather.js?v=13';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=13';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=13';
-import { buildClosing, isFeierabendTime } from './closing.js?v=13';
-import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=13';
+import { parseEventsParam } from './bridge.js?v=15';
+import { buildBriefing } from './briefing.js?v=15';
+import { createStore } from './store.js?v=15';
+import { fetchWeather } from './weather.js?v=15';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=15';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=15';
+import { buildClosing, isFeierabendTime } from './closing.js?v=15';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=15';
 import {
   DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount, shortcutTimerUrl,
-} from './visit.js?v=13';
+} from './visit.js?v=15';
+import {
+  DEFAULT_SESSIONS, DEFAULT_DAYS, parseExercises, formatExercises, targetInfo, sessionForDay, startWorkout,
+  currentExercise, completeSet, skipRest, restLeftMs, logEntry, lastResult, workoutSummary,
+} from './training.js?v=15';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -48,7 +52,7 @@ const tomorrow = () => {
   return isoDate(d);
 };
 
-const state = { visit: null, visitEnded: false, visitTick: null, view: params.get('feierabend') === '1' ? 'closing' : 'day', weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
+const state = { workout: null, workoutEnded: false, workoutSummary: null, workoutTick: null, visit: null, visitEnded: false, visitTick: null, view: params.get('feierabend') === '1' ? 'closing' : 'day', weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
 
 // Termine kommen nur über den Kurzbefehl in der Adresse. Für den Tag merken, damit das Symbol sie auch zeigt.
 if (params.has('events')) {
@@ -62,14 +66,39 @@ if (params.has('events')) {
   }
 }
 
+const weekdayOf = (date) => new Date(`${date}T12:00:00`).getDay();
+
+function trainDays() {
+  try {
+    const d = JSON.parse(read('planer.trainDays') || 'null');
+    if (d && typeof d === 'object') return d;
+  } catch {
+    // kaputt: Standard verwenden
+  }
+  return DEFAULT_DAYS;
+}
+
+function trainExercises(name) {
+  const custom = store.getTemplates()[`Training:${name}`];
+  return custom?.length ? custom : DEFAULT_SESSIONS[name] ?? [];
+}
+
+function trainingAnchor(date = today()) {
+  const wd = weekdayOf(date);
+  const name = sessionForDay(wd, trainDays());
+  if (!name) return null;
+  return { id: 'training', title: `Training: ${name}`, time: read('planer.trainTime') || '17:00', minutes: Number(read('planer.trainMinutes')) || 60, days: [wd] };
+}
+
 function currentBriefing() {
+  const training = trainingAnchor();
   return buildBriefing({
     name: read('planer.name') || '',
     date: today(),
     now: clock(),
     events: state.events,
     tasks: store.getTasks(today()),
-    anchors: store.getAnchors(),
+    anchors: store.getAnchors().concat(training ? [training] : []),
     weather: state.weather,
   });
 }
@@ -193,7 +222,7 @@ function closingItem(text, buttons, cls) {
 }
 
 function renderClosing() {
-  const c = buildClosing({ date: today(), tomorrow: tomorrow(), tasks: store.getTasks(today()).concat(store.getTasks(tomorrow())), anchors: store.getAnchors() });
+  const c = buildClosing({ date: today(), tomorrow: tomorrow(), tasks: store.getTasks(today()).concat(store.getTasks(tomorrow())), anchors: store.getAnchors().concat(trainingAnchor(tomorrow()) ?? []) });
   $('closingSummary').textContent = c.summary;
   const done = $('closingDone');
   done.replaceChildren(...c.doneToday.map((t) => closingItem(`${t.title}`, [], 'done')));
@@ -215,7 +244,10 @@ function render() {
   const b = currentBriefing();
   const closing = state.view === 'closing';
   const visiting = state.view === 'visit';
-  const day = !closing && !visiting;
+  const training = state.view === 'training';
+  const day = !closing && !visiting && !training;
+  $('trainingView').hidden = !training;
+  $('trainingBtn').hidden = !day;
   $('dayView').hidden = !day;
   $('closingView').hidden = !closing;
   $('visitView').hidden = !visiting;
@@ -224,6 +256,7 @@ function render() {
   $('speakBtn').hidden = !day;
   $('lateHint').hidden = !day || !isFeierabendTime(clock()) || read('planer.feierabend') === today();
   if (visiting) renderVisit();
+  if (training) renderTraining();
   if (closing) renderClosing();
   state.lastBriefing = b;
   $('dateLabel').textContent = b.dateLabel;
@@ -557,6 +590,206 @@ function setupVisit() {
   }
 }
 
+const UNIT_WORD = { Wdh: 'Wiederholungen', Sek: 'Sekunden', Min: 'Minuten' };
+const UNIT_SHORT = { Wdh: 'Wdh', Sek: 's', Min: 'Min' };
+
+function saveWorkout() {
+  write('planer.workout', state.workout && !state.workoutEnded ? JSON.stringify(state.workout) : '');
+}
+
+function renderTraining() {
+  const w = state.workout;
+  const phase = !w ? 'choose' : state.workoutEnded ? 'summary' : 'run';
+  $('trainChoose').hidden = phase !== 'choose';
+  $('trainRun').hidden = phase !== 'run';
+  $('trainSummary').hidden = phase !== 'summary';
+
+  if (phase === 'choose') {
+    const todayName = sessionForDay(weekdayOf(today()), trainDays());
+    $('trainToday').textContent = todayName ? `Heute steht ${todayName} an.` : 'Heute ist kein Trainingstag. Du kannst trotzdem trainieren.';
+    const sel = $('trainSession');
+    if (!sel.options.length) {
+      for (const name of Object.keys(DEFAULT_SESSIONS)) {
+        const o = el('option', name);
+        o.value = name;
+        sel.append(o);
+      }
+      sel.value = todayName || Object.keys(DEFAULT_SESSIONS)[0];
+    }
+    $('trainPreview').replaceChildren(...trainExercises(sel.value).map((e) => closingItem(`${e.name}: ${e.sets} mal ${e.target}`, [])));
+  }
+
+  if (phase === 'run') {
+    const ex = currentExercise(w);
+    if (!ex) {
+      endTraining();
+      return;
+    }
+    const info = targetInfo(ex.target);
+    const resting = restLeftMs(w, Date.now()) > 0;
+    $('trainWork').hidden = resting;
+    $('trainRest').hidden = !resting;
+    $('trainProgress').textContent = `Übung ${w.exIndex + 1} von ${w.exercises.length}`;
+    if (resting) {
+      updateRestCount();
+      $('trainNext').textContent = `Danach: ${ex.name}, Satz ${w.setIndex + 1} von ${ex.sets}`;
+    } else {
+      const last = lastResult(store.getLog(), w.name, ex.name);
+      $('trainExercise').textContent = ex.name;
+      $('trainSet').textContent = `Satz ${w.setIndex + 1} von ${ex.sets}`;
+      const range = info.low === info.high ? String(info.low) : `${info.low}\u2013${info.high}`;
+      $('trainTarget').textContent = `Ziel: ${range} ${UNIT_WORD[info.unit]}`;
+      $('trainLast').textContent = last ? `Letztes Mal: ${last.join(', ')}` : '';
+      const input = $('trainValue');
+      input.parentElement.hidden = info.unit === 'Min';
+      input.value = String(last?.[w.setIndex] ?? info.low);
+      $('trainDoneBtn').textContent = info.unit === 'Min' ? 'Fertig' : 'Satz geschafft';
+    }
+  }
+
+  if (phase === 'summary') {
+    const sum = state.workoutSummary;
+    const sets = sum.lines.reduce((n, l) => n + l.sets.length, 0);
+    $('trainSummaryText').textContent = sets ? `Geschafft: ${sets} ${sets === 1 ? 'Satz' : 'Sätze'} in ${sum.minutes} Minuten` : 'Diesmal kein Satz geschafft. Das ist okay.';
+    $('trainSummaryList').replaceChildren(...sum.lines.filter((l) => l.sets.length).map((l) => {
+      const info = targetInfo(l.target);
+      const li = el('li');
+      li.style.flexDirection = 'column';
+      li.style.alignItems = 'flex-start';
+      li.append(el('span', `${l.name}: ${l.sets.join(' \u00b7 ')} ${UNIT_SHORT[info.unit]}`));
+      if (l.last) li.append(el('span', `Letztes Mal: ${l.last.join(' \u00b7 ')}`, 'note'));
+      if (l.hint) li.append(el('span', l.hint, 'note'));
+      return li;
+    }));
+  }
+}
+
+function updateRestCount() {
+  const w = state.workout;
+  if (w) $('trainRestCount').textContent = formatMmSs(restLeftMs(w, Date.now()));
+}
+
+function tickTraining() {
+  const w = state.workout;
+  if (!w || state.workoutEnded || state.view !== 'training') return;
+  const resting = restLeftMs(w, Date.now()) > 0;
+  if (resting === $('trainRest').hidden) renderTraining();
+  else if (resting) updateRestCount();
+}
+
+function endTraining() {
+  const w = state.workout;
+  if (!w) return;
+  const sum = workoutSummary(w, store.getLog(), Date.now());
+  if (sum.lines.some((l) => l.sets.length)) store.addLog(logEntry(w, today()));
+  state.workoutSummary = sum;
+  state.workoutEnded = true;
+  saveWorkout();
+  render();
+}
+
+function leaveTraining() {
+  clearInterval(state.workoutTick);
+  state.workout = null;
+  state.workoutEnded = false;
+  state.workoutSummary = null;
+  saveWorkout();
+  state.view = 'day';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function setupTraining() {
+  const sel = $('trainSession');
+  sel.addEventListener('change', renderTraining);
+  $('trainingBtn').addEventListener('click', () => { state.view = 'training'; render(); window.scrollTo(0, 0); });
+  $('trainBackBtn').addEventListener('click', leaveTraining);
+  $('trainAgainBtn').addEventListener('click', leaveTraining);
+  $('trainStartBtn').addEventListener('click', () => {
+    state.workout = startWorkout(sel.value, trainExercises(sel.value), Date.now());
+    state.workoutEnded = false;
+    saveWorkout();
+    clearInterval(state.workoutTick);
+    state.workoutTick = setInterval(tickTraining, 500);
+    render();
+  });
+  $('trainDoneBtn').addEventListener('click', () => {
+    const ex = currentExercise(state.workout);
+    const info = targetInfo(ex.target);
+    const value = info.unit === 'Min' ? info.high : Math.max(0, Math.round(Number($('trainValue').value) || 0));
+    state.workout = completeSet(state.workout, value, Date.now());
+    saveWorkout();
+    render();
+  });
+  $('trainSkipBtn').addEventListener('click', () => { state.workout = skipRest(state.workout); saveWorkout(); render(); });
+  $('trainEndBtn').addEventListener('click', endTraining);
+
+  // Plan bearbeiten
+  const daysBox = $('trainDays');
+  const current = trainDays();
+  const names = Object.keys(DEFAULT_SESSIONS);
+  const daySelects = {};
+  for (const [label, n] of DAY_NAMES) {
+    const row = el('label');
+    const s2 = document.createElement('select');
+    const none = el('option', 'frei');
+    none.value = '';
+    s2.append(none);
+    for (const name of names) {
+      const o = el('option', name);
+      o.value = name;
+      s2.append(o);
+    }
+    s2.value = current[n] || '';
+    daySelects[n] = s2;
+    row.append(el('span', label), s2);
+    daysBox.append(row);
+  }
+  $('trainTime').value = read('planer.trainTime') || '17:00';
+  $('trainMinutes').value = read('planer.trainMinutes') || '60';
+  const edit = $('trainEditSession');
+  for (const name of names) {
+    const o = el('option', name);
+    o.value = name;
+    edit.append(o);
+  }
+  const load = () => {
+    const custom = store.getTemplates()[`Training:${edit.value}`];
+    $('trainText').value = formatExercises(custom?.length ? custom : DEFAULT_SESSIONS[edit.value]);
+    $('trainInfo').textContent = custom?.length ? 'Eigene Übungen.' : 'Standardübungen.';
+  };
+  edit.addEventListener('change', load);
+  load();
+  $('trainForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const map = {};
+    for (const [n, s2] of Object.entries(daySelects)) if (s2.value) map[n] = s2.value;
+    write('planer.trainDays', JSON.stringify(map));
+    write('planer.trainTime', $('trainTime').value || '17:00');
+    write('planer.trainMinutes', String(Math.min(180, Math.max(10, Number($('trainMinutes').value) || 60))));
+    const list = parseExercises($('trainText').value);
+    if (list.length) store.setTemplate(`Training:${edit.value}`, list);
+    else store.resetTemplate(`Training:${edit.value}`);
+    load();
+    $('trainInfo').textContent = 'Gespeichert.';
+    render();
+  });
+  $('trainReset').addEventListener('click', () => { store.resetTemplate(`Training:${edit.value}`); load(); });
+
+  // Ein laufendes Training übersteht das Neuladen
+  try {
+    const saved = JSON.parse(read('planer.workout') || 'null');
+    if (saved && Array.isArray(saved.exercises) && !saved.finished && Date.now() - saved.startedAt < 4 * 3600000) {
+      state.workout = saved;
+      state.view = 'training';
+      state.workoutTick = setInterval(tickTraining, 500);
+    }
+  } catch {
+    // kaputter Stand: ignorieren
+  }
+  if (params.get('training') === '1' && !state.workout) state.view = 'training';
+}
+
 function setupClosing() {
   const open = () => { state.view = 'closing'; render(); window.scrollTo(0, 0); };
   $('closingBtn').addEventListener('click', open);
@@ -606,5 +839,6 @@ setupForms();
 setupSplit();
 setupClosing();
 setupVisit();
+setupTraining();
 render();
 locate();

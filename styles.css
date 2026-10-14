@@ -82,7 +82,7 @@ textarea { margin-top: 8px; font: 13px/1.4 ui-monospace, monospace; }
 label.check { display: flex; align-items: flex-start; gap: 8px; color: var(--text); font-size: 15px; }
 label.check input { width: 22px; min-height: 22px; margin-top: 2px; }
 
-.actions { display: grid; gap: 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
 .late { margin-top: 12px; background: var(--amber-bg); color: var(--amber-tx); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
 .late button { width: 100%; }
 button.wide { width: 100%; margin-top: 12px; }
@@ -102,3 +102,12 @@ button.wide { width: 100%; margin-top: 12px; }
 #visitView .dur { margin-bottom: 12px; font-size: 15px; }
 #visitView .next { margin-top: 12px; }
 #visitView button.primary { width: 100%; }
+
+#trainingView .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+#trainingView .what { font-size: 20px; font-weight: 600; margin: 2px 0; }
+#trainingView .dur { font-size: 15px; margin-bottom: 4px; }
+#trainingView .count { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
+#trainingView .label { color: var(--muted); font-size: 13px; }
+#trainingView label { margin-top: 10px; }
+.traindays { display: grid; gap: 6px; }
+.traindays label { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 8px; color: var(--text); }

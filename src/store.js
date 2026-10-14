@@ -10,12 +10,13 @@ function load(storage) {
     const data = raw ? JSON.parse(raw) : null;
     if (data && Array.isArray(data.tasks) && Array.isArray(data.anchors)) {
       data.templates = data.templates && typeof data.templates === 'object' ? data.templates : {};
+      data.log = Array.isArray(data.log) ? data.log : [];
       return data;
     }
   } catch {
     // kaputte oder nicht lesbare Daten: mit leerem Stand weitermachen
   }
-  return { tasks: [], anchors: [], templates: {} };
+  return { tasks: [], anchors: [], templates: {}, log: [] };
 }
 
 /** Speichert Aufgaben und Anker; ohne nutzbaren Speicher bleibt alles im Arbeitsspeicher. */
@@ -63,6 +64,11 @@ export function createStore(storage) {
       data.anchors = data.anchors.filter((a) => a.id !== id);
       save();
     },
+    getLog: () => data.log.slice(),
+    addLog(entry) {
+      data.log.push(entry);
+      save();
+    },
     getTemplates: () => ({ ...data.templates }),
     setTemplate(name, zones) {
       data.templates[name] = zones;
@@ -73,6 +79,6 @@ export function createStore(storage) {
       save();
     },
     exportJson: () =>
-      JSON.stringify({ version: 1, tasks: data.tasks, anchors: data.anchors, templates: data.templates }, null, 2),
+      JSON.stringify({ version: 1, tasks: data.tasks, anchors: data.anchors, templates: data.templates, log: data.log }, null, 2),
   };
 }

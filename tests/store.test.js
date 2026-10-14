@@ -89,3 +89,12 @@ test('Zonen-Vorlagen speichern, lesen und zurücksetzen', () => {
   assert.deepEqual(s.getTemplates(), {});
   assert.ok(JSON.parse(s.exportJson()).templates);
 });
+
+test('Trainingsprotokoll speichern, lesen und im Export finden', () => {
+  const storage = memoryStorage();
+  const s = createStore(storage);
+  assert.deepEqual(s.getLog(), []);
+  s.addLog({ date: '2026-10-12', session: 'Push', exercises: [] });
+  assert.equal(createStore(storage).getLog().length, 1);
+  assert.equal(JSON.parse(s.exportJson()).log.length, 1);
+});

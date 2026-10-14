@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Planer">
 <meta name="theme-color" content="#f6f5f1">
 <title>Mein Tag</title>
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=15">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 </head>
@@ -19,12 +19,13 @@
       <h1 id="greeting">Guten Morgen</h1>
       <p class="weather" id="weatherLine"></p>
     </div>
-    <div class="actions">
-      <button type="button" id="speakBtn" class="primary">Vorlesen</button>
-      <button type="button" id="closingBtn">Feierabend</button>
-      <button type="button" id="visitBtn">Besuch kommt</button>
-    </div>
   </header>
+  <div class="actions">
+    <button type="button" id="speakBtn" class="primary">Vorlesen</button>
+    <button type="button" id="trainingBtn">Training</button>
+    <button type="button" id="visitBtn">Besuch kommt</button>
+    <button type="button" id="closingBtn">Feierabend</button>
+  </div>
   <p class="hint" id="speakHint" role="status"></p>
   <p class="hint" id="ctxHint" role="status"></p>
   <div class="late" id="lateHint" hidden>
@@ -94,6 +95,25 @@
         <button type="button" id="zonesReset">Zurücksetzen</button>
       </div>
       <p class="note" id="zonesInfo" role="status"></p>
+    </form>
+
+    <form id="trainForm" class="form">
+      <h3>Trainingsplan bearbeiten</h3>
+      <fieldset>
+        <legend>Welche Einheit an welchem Tag</legend>
+        <div id="trainDays" class="traindays"></div>
+      </fieldset>
+      <div class="row">
+        <label>Uhrzeit<input id="trainTime" type="time" value="17:00"></label>
+        <label>Minuten<input id="trainMinutes" type="number" min="10" max="180" value="60"></label>
+      </div>
+      <label>Einheit bearbeiten<select id="trainEditSession"></select></label>
+      <label>Übungen, eine pro Zeile: Name | Sätze | Ziel | Pause in Sekunden<textarea id="trainText" rows="9"></textarea></label>
+      <div class="row">
+        <button type="submit">Speichern</button>
+        <button type="button" id="trainReset">Zurücksetzen</button>
+      </div>
+      <p class="note" id="trainInfo" role="status"></p>
     </form>
 
     <form id="nameForm" class="form">
@@ -186,7 +206,47 @@
       <button type="button" id="visitAgainBtn" class="wide">Zurück zum Tag</button>
     </div>
   </section>
+
+  <section id="trainingView" hidden aria-labelledby="trainingTitle">
+    <h2 id="trainingTitle">Training</h2>
+
+    <div id="trainChoose">
+      <p id="trainToday"></p>
+      <label>Einheit<select id="trainSession"></select></label>
+      <ul class="list" id="trainPreview"></ul>
+      <p class="note">Wärm dich auf und hör bei Schmerzen auf. Du schaffst, was heute geht.</p>
+      <button type="button" id="trainStartBtn" class="primary wide">Training starten</button>
+      <button type="button" id="trainBackBtn" class="wide">Zurück zum Tag</button>
+    </div>
+
+    <div id="trainRun" hidden>
+      <p class="note" id="trainProgress"></p>
+      <div class="card">
+        <div id="trainWork">
+          <p class="what" id="trainExercise"></p>
+          <p class="dur" id="trainSet"></p>
+          <p class="note" id="trainTarget"></p>
+          <p class="note" id="trainLast"></p>
+          <label>Geschafft<input id="trainValue" type="number" inputmode="numeric" min="0" max="999"></label>
+          <button type="button" id="trainDoneBtn" class="primary wide">Satz geschafft</button>
+        </div>
+        <div id="trainRest" hidden>
+          <p class="label">Pause</p>
+          <p class="count" id="trainRestCount" role="timer"></p>
+          <p class="note" id="trainNext"></p>
+          <button type="button" id="trainSkipBtn" class="primary wide">Weiter ohne Pause</button>
+        </div>
+      </div>
+      <button type="button" id="trainEndBtn" class="wide">Training beenden</button>
+    </div>
+
+    <div id="trainSummary" hidden>
+      <p class="summary" id="trainSummaryText"></p>
+      <ul class="list" id="trainSummaryList"></ul>
+      <button type="button" id="trainAgainBtn" class="wide">Zurück zum Tag</button>
+    </div>
+  </section>
 </main>
-<script type="module" src="src/app.js?v=13"></script>
+<script type="module" src="src/app.js?v=15"></script>
 </body>
 </html>
