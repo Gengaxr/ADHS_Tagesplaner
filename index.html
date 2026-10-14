@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Planer">
 <meta name="theme-color" content="#f6f5f1">
 <title>Mein Tag</title>
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 </head>
@@ -19,10 +19,19 @@
       <h1 id="greeting">Guten Morgen</h1>
       <p class="weather" id="weatherLine"></p>
     </div>
-    <button type="button" id="speakBtn" class="primary">Vorlesen</button>
+    <div class="actions">
+      <button type="button" id="speakBtn" class="primary">Vorlesen</button>
+      <button type="button" id="closingBtn">Feierabend</button>
+    </div>
   </header>
   <p class="hint" id="speakHint" role="status"></p>
   <p class="hint" id="ctxHint" role="status"></p>
+  <div class="late" id="lateHint" hidden>
+    <p>Es ist spät. Magst du den Tag jetzt abschließen?</p>
+    <button type="button" id="lateBtn" class="primary">Feierabend-Check</button>
+  </div>
+
+  <div id="dayView">
 
   <section aria-labelledby="bandTitle">
     <h2 id="bandTitle">Dein Tag</h2>
@@ -96,7 +105,34 @@
     <button type="button" id="exportBtn">Daten als Text zeigen</button>
     <textarea id="exportBox" readonly rows="6" hidden aria-label="Exportierte Daten"></textarea>
   </details>
+  </div>
+
+  <section id="closingView" hidden aria-labelledby="closingTitle">
+    <h2 id="closingTitle">Feierabend</h2>
+    <p class="summary" id="closingSummary"></p>
+    <ul class="list" id="closingDone"></ul>
+
+    <div id="closingOpenBox">
+      <h3>Noch offen von heute</h3>
+      <p class="note">Kein Druck. Schieb es auf morgen oder lass es los.</p>
+      <ul class="list" id="closingOpen"></ul>
+    </div>
+
+    <h3>Morgen</h3>
+    <ul class="list" id="closingTomorrow"></ul>
+    <form id="closingAddForm" class="form">
+      <label>Für morgen eintragen<input name="title" required maxlength="80" placeholder="Müll raus"></label>
+      <div class="row">
+        <label>Minuten<input name="minutes" type="number" min="1" max="240" value="10" required></label>
+        <button type="submit">Hinzufügen</button>
+      </div>
+    </form>
+
+    <button type="button" id="closingDoneBtn" class="primary wide">Gute Nacht</button>
+    <p class="note" id="closingBye" role="status"></p>
+    <button type="button" id="closingBackBtn" class="wide">Zurück zum Tag</button>
+  </section>
 </main>
-<script type="module" src="src/app.js?v=5"></script>
+<script type="module" src="src/app.js?v=7"></script>
 </body>
 </html>

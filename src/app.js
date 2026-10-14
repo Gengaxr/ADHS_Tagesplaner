@@ -1,9 +1,10 @@
-import { parseEventsParam } from './bridge.js?v=5';
-import { buildBriefing } from './briefing.js?v=5';
-import { createStore } from './store.js?v=5';
-import { fetchWeather } from './weather.js?v=5';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=5';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=5';
+import { parseEventsParam } from './bridge.js?v=7';
+import { buildBriefing } from './briefing.js?v=7';
+import { createStore } from './store.js?v=7';
+import { fetchWeather } from './weather.js?v=7';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=7';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=7';
+import { buildClosing, isFeierabendTime } from './closing.js?v=7';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -43,7 +44,7 @@ const tomorrow = () => {
   return isoDate(d);
 };
 
-const state = { weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
+const state = { view: params.get('feierabend') === '1' ? 'closing' : 'day', weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
 
 // Termine kommen nur über den Kurzbefehl in der Adresse. Für den Tag merken, damit das Symbol sie auch zeigt.
 if (params.has('events')) {
@@ -175,8 +176,46 @@ function renderLists() {
   }
 }
 
+function closingItem(text, buttons, cls) {
+  const li = el('li', null, cls);
+  li.append(el('span', text));
+  for (const [label, fn] of buttons) {
+    const b = el('button', label);
+    b.type = 'button';
+    b.addEventListener('click', fn);
+    li.append(b);
+  }
+  return li;
+}
+
+function renderClosing() {
+  const c = buildClosing({ date: today(), tomorrow: tomorrow(), tasks: store.getTasks(today()).concat(store.getTasks(tomorrow())), anchors: store.getAnchors() });
+  $('closingSummary').textContent = c.summary;
+  const done = $('closingDone');
+  done.replaceChildren(...c.doneToday.map((t) => closingItem(`${t.title}`, [], 'done')));
+  $('closingOpenBox').hidden = c.openToday.length === 0;
+  $('closingOpen').replaceChildren(...c.openToday.map((t) => closingItem(t.title, [
+    ['Auf morgen', () => { store.moveTask(t.id, tomorrow()); render(); }],
+    ['Loslassen', () => { store.removeTask(t.id); render(); }],
+  ])));
+  const tm = [
+    ...c.tomorrowAnchors.map((a) => closingItem(`${a.time} ${a.title}`, [])),
+    ...c.tomorrowTasks.map((t) => closingItem(`${t.title} (${t.minutes} Min)`, [['Entfernen', () => { store.removeTask(t.id); render(); }]])),
+  ];
+  $('closingTomorrow').replaceChildren(...(tm.length ? tm : [el('li', 'Morgen ist noch frei. Das ist okay.', 'empty')]));
+  const doneToday = read('planer.feierabend') === today();
+  $('closingBye').textContent = doneToday ? 'Gute Nacht. Morgen früh wartet dein Briefing.' : '';
+}
+
 function render() {
   const b = currentBriefing();
+  const closing = state.view === 'closing';
+  $('dayView').hidden = closing;
+  $('closingView').hidden = !closing;
+  $('closingBtn').hidden = closing;
+  $('speakBtn').hidden = closing;
+  $('lateHint').hidden = closing || !isFeierabendTime(clock()) || read('planer.feierabend') === today();
+  if (closing) renderClosing();
   state.lastBriefing = b;
   $('dateLabel').textContent = b.dateLabel;
   $('greeting').textContent = b.greeting;
@@ -301,6 +340,21 @@ function setupVoices() {
   });
 }
 
+function setupClosing() {
+  const open = () => { state.view = 'closing'; render(); window.scrollTo(0, 0); };
+  $('closingBtn').addEventListener('click', open);
+  $('lateBtn').addEventListener('click', open);
+  $('closingBackBtn').addEventListener('click', () => { state.view = 'day'; render(); window.scrollTo(0, 0); });
+  $('closingDoneBtn').addEventListener('click', () => { write('planer.feierabend', today()); render(); });
+  $('closingAddForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    store.addTask({ title: String(f.get('title')).trim(), minutes: Number(f.get('minutes')) || 10, date: tomorrow() });
+    e.target.reset();
+    render();
+  });
+}
+
 function locate() {
   const saved = read('planer.loc');
   if (saved) {
@@ -332,5 +386,6 @@ if (window.navigator.standalone === true) {
 }
 
 setupForms();
+setupClosing();
 render();
 locate();

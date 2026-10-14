@@ -81,3 +81,13 @@ legend { font-size: 14px; color: var(--muted); padding: 0; margin-bottom: 4px; }
 textarea { margin-top: 8px; font: 13px/1.4 ui-monospace, monospace; }
 label.check { display: flex; align-items: flex-start; gap: 8px; color: var(--text); font-size: 15px; }
 label.check input { width: 22px; min-height: 22px; margin-top: 2px; }
+
+.actions { display: grid; gap: 8px; }
+.late { margin-top: 12px; background: var(--amber-bg); color: var(--amber-tx); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.late button { width: 100%; }
+button.wide { width: 100%; margin-top: 12px; }
+.summary { font-size: 18px; font-weight: 600; margin: 4px 0 8px; }
+#closingView h3 { margin-top: 24px; }
+.list li.done span { color: var(--muted); }
+[hidden] { display: none !important; }
+.list li.done span::before { content: "\2713\00a0\00a0"; }

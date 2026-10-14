@@ -59,6 +59,19 @@ Safari zeigt der Seite nur die Standardstimme. Ein Kurzbefehl kann dagegen die g
 
 Danach startet der Knopf "Vorlesen" diesen Kurzbefehl. Safari fragt einmal, ob es Kurzbefehle öffnen darf.
 
+## 6. Feierabend-Check (optional, ab 23 Uhr erinnern)
+
+Den Feierabend-Check startest du jederzeit selbst über den Knopf **Feierabend** oben auf der Seite, sobald dein Kopf müde wird. Er zeigt, was du heute geschafft hast, lässt dich Offenes auf morgen schieben oder loslassen und lässt dich Aufgaben für morgen eintragen. Danach tippst du auf **Gute Nacht**. Was du für morgen einträgst, steht im Briefing am nächsten Morgen.
+
+Damit dich das iPhone ab 23 Uhr erinnert:
+
+1. Doppelklicke am Mac die Datei `docs/Planer-Feierabend.shortcut` aus diesem Repository und klicke auf **Kurzbefehl hinzufügen**. Er hat nur eine Aktion: Er öffnet die Seite im Feierabend-Modus.
+2. Auf dem iPhone: Kurzbefehle, **Automation**, **Plus**, **Tageszeit**, **23:00**, **Täglich**, **Weiter**.
+3. **Kurzbefehl ausführen** wählen und `Planer-Feierabend` aussuchen. **Weiter**.
+4. **Sofort ausführen** einschalten, "Beim Ausführen benachrichtigen" ausschalten, **Fertig**.
+
+Ab 23 Uhr zeigt die Seite außerdem oben einen Hinweis "Es ist spät", wenn du sie öffnest.
+
 ## Gut zu wissen
 
 - Die Seite öffnet sich im **Standardbrowser** deines iPhones. Der sollte **Safari** sein, denn Chrome und Safari haben je einen eigenen Speicher.

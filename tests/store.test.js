@@ -69,3 +69,12 @@ test('kaputte gespeicherte Daten werden ignoriert', () => {
   storage.setItem('planer.v1', '{kaputt');
   assert.deepEqual(createStore(storage).getTasks('2026-10-14'), []);
 });
+
+test('moveTask verschiebt eine Aufgabe auf einen anderen Tag', () => {
+  const s = createStore(memoryStorage());
+  const t = s.addTask({ title: 'Müll', minutes: 5, date: '2026-10-14' });
+  s.moveTask(t.id, '2026-10-15');
+  assert.deepEqual(s.getTasks('2026-10-14'), []);
+  assert.deepEqual(s.getTasks('2026-10-15').map((x) => x.title), ['Müll']);
+  s.moveTask('gibt-es-nicht', '2026-10-16');
+});

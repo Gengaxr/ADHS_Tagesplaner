@@ -40,6 +40,11 @@ export function createStore(storage) {
       if (t) t.done = done;
       save();
     },
+    moveTask(id, date) {
+      const t = data.tasks.find((x) => x.id === id);
+      if (t) t.date = date;
+      save();
+    },
     removeTask(id) {
       data.tasks = data.tasks.filter((t) => t.id !== id);
       save();
