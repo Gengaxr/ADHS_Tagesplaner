@@ -78,3 +78,14 @@ test('moveTask verschiebt eine Aufgabe auf einen anderen Tag', () => {
   assert.deepEqual(s.getTasks('2026-10-15').map((x) => x.title), ['Müll']);
   s.moveTask('gibt-es-nicht', '2026-10-16');
 });
+
+test('Zonen-Vorlagen speichern, lesen und zurücksetzen', () => {
+  const storage = memoryStorage();
+  const s = createStore(storage);
+  assert.deepEqual(s.getTemplates(), {});
+  s.setTemplate('Bad', [{ title: 'Spiegel', minutes: 3 }]);
+  assert.deepEqual(createStore(storage).getTemplates(), { Bad: [{ title: 'Spiegel', minutes: 3 }] });
+  s.resetTemplate('Bad');
+  assert.deepEqual(s.getTemplates(), {});
+  assert.ok(JSON.parse(s.exportJson()).templates);
+});

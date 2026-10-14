@@ -1,10 +1,11 @@
-import { parseEventsParam } from './bridge.js?v=7';
-import { buildBriefing } from './briefing.js?v=7';
-import { createStore } from './store.js?v=7';
-import { fetchWeather } from './weather.js?v=7';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=7';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=7';
-import { buildClosing, isFeierabendTime } from './closing.js?v=7';
+import { parseEventsParam } from './bridge.js?v=9';
+import { buildBriefing } from './briefing.js?v=9';
+import { createStore } from './store.js?v=9';
+import { fetchWeather } from './weather.js?v=9';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=9';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=9';
+import { buildClosing, isFeierabendTime } from './closing.js?v=9';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=9';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -340,6 +341,93 @@ function setupVoices() {
   });
 }
 
+function showSplit(box, title, date, after) {
+  box.replaceChildren();
+  const s = suggestSplit(title, store.getTemplates());
+  if (!s) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  box.append(el('h3', s.generic ? 'Einfache Aufteilung' : `Vorschlag für ${s.name}`));
+  if (s.generic) box.append(el('p', 'Dafür gibt es keine Vorlage. So lässt es sich in drei kleine Schritte teilen.', 'note'));
+  const list = el('ul', null, 'list');
+  const picks = [];
+  for (const z of s.zones) {
+    const li = el('li');
+    const c = document.createElement('input');
+    c.type = 'checkbox';
+    c.checked = true;
+    c.setAttribute('aria-label', z.title);
+    picks.push([c, z]);
+    li.append(c, el('span', `${z.title} (${z.minutes} Min)`));
+    list.append(li);
+  }
+  const add = el('button', 'Ausgewählte eintragen', 'primary');
+  add.type = 'button';
+  add.addEventListener('click', () => {
+    for (const [c, z] of picks) {
+      if (c.checked) store.addTask({ title: s.generic ? z.title : `${s.name}: ${z.title}`, minutes: z.minutes, date });
+    }
+    box.hidden = true;
+    box.replaceChildren();
+    after();
+  });
+  const cancel = el('button', 'Abbrechen');
+  cancel.type = 'button';
+  cancel.addEventListener('click', () => {
+    box.hidden = true;
+    box.replaceChildren();
+  });
+  box.append(list, add, cancel);
+}
+
+function setupSplit() {
+  $('splitBtn').addEventListener('click', () => {
+    const f = $('taskForm').elements;
+    showSplit($('splitBox'), f.title.value, f.when.value === 'tomorrow' ? tomorrow() : today(), () => {
+      $('taskForm').reset();
+      render();
+    });
+  });
+  $('closingSplitBtn').addEventListener('click', () => {
+    const f = $('closingAddForm').elements;
+    showSplit($('closingSplitBox'), f.title.value, tomorrow(), () => {
+      $('closingAddForm').reset();
+      render();
+    });
+  });
+  const room = $('zonesRoom');
+  const text = $('zonesText');
+  for (const name of Object.keys(DEFAULT_ROOMS)) {
+    const o = el('option', name);
+    o.value = name;
+    room.append(o);
+  }
+  const load = () => {
+    const custom = store.getTemplates()[room.value];
+    text.value = formatZones(custom?.length ? custom : DEFAULT_ROOMS[room.value]);
+    $('zonesInfo').textContent = custom?.length ? 'Eigene Zonen.' : 'Standardzonen.';
+  };
+  room.addEventListener('change', load);
+  load();
+  $('zonesForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const zones = parseZones(text.value);
+    if (zones.length) {
+      store.setTemplate(room.value, zones);
+      $('zonesInfo').textContent = 'Gespeichert.';
+    } else {
+      store.resetTemplate(room.value);
+      load();
+    }
+  });
+  $('zonesReset').addEventListener('click', () => {
+    store.resetTemplate(room.value);
+    load();
+  });
+}
+
 function setupClosing() {
   const open = () => { state.view = 'closing'; render(); window.scrollTo(0, 0); };
   $('closingBtn').addEventListener('click', open);
@@ -386,6 +474,7 @@ if (window.navigator.standalone === true) {
 }
 
 setupForms();
+setupSplit();
 setupClosing();
 render();
 locate();

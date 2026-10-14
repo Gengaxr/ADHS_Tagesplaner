@@ -77,5 +77,6 @@ Ab 23 Uhr zeigt die Seite außerdem oben einen Hinweis "Es ist spät", wenn du s
 - Die Seite öffnet sich im **Standardbrowser** deines iPhones. Der sollte **Safari** sein, denn Chrome und Safari haben je einen eigenen Speicher.
 - Vorlesen geht nur nach einem **Tipp auf "Vorlesen"**, das erlaubt iOS nicht anders.
 - Eine andere Stimme wählst du unten auf der Seite unter "Aufgaben und Anker", Abschnitt "Stimme". Bessere Stimmen lädst du in den iPhone-Einstellungen unter Bedienungshilfen, Gesprochene Inhalte, Stimmen, Deutsch.
+- **Große Aufgaben zerlegen:** Tippe im Formular "Aufgabe hinzufügen" (oder im Feierabend-Check) zum Beispiel `Wohnzimmer aufräumen` ein und dann auf **In kleine Zonen zerlegen**. Du bekommst Teilaufgaben wie "Couch ordnen" oder "Schreibtisch aufräumen", wählst aus und trägst sie ein. Die Zonen für Wohnzimmer, Schlafzimmer (mit Kleiderstangen) und Bad kannst du unten unter **Zonen bearbeiten** ändern. Für andere Aufgaben schlägt die Seite drei einfache Schritte vor.
 - Aufgaben und Anker legst du ebenfalls unten auf der Seite an. Sie bleiben nur auf diesem iPhone.
 - Zum Testen kannst du `?now=08:05&date=2026-10-14` an die Adresse hängen.

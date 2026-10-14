@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Planer">
 <meta name="theme-color" content="#f6f5f1">
 <title>Mein Tag</title>
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=9">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 </head>
@@ -60,7 +60,9 @@
       </div>
       <label>Erster kleiner Schritt (optional)<input name="firstStep" maxlength="80" placeholder="Nur die Wäsche vom Boden nehmen"></label>
       <button type="submit">Hinzufügen</button>
+      <button type="button" id="splitBtn">In kleine Zonen zerlegen</button>
     </form>
+    <div id="splitBox" class="form" hidden></div>
 
     <h3>Aufgaben heute und morgen</h3>
     <ul class="list" id="taskList"></ul>
@@ -81,6 +83,17 @@
 
     <h3>Deine Anker</h3>
     <ul class="list" id="anchorList"></ul>
+
+    <form id="zonesForm" class="form">
+      <h3>Zonen bearbeiten</h3>
+      <label>Raum<select id="zonesRoom"></select></label>
+      <label>Zonen, eine pro Zeile: Titel | Minuten<textarea id="zonesText" rows="7"></textarea></label>
+      <div class="row">
+        <button type="submit">Speichern</button>
+        <button type="button" id="zonesReset">Zurücksetzen</button>
+      </div>
+      <p class="note" id="zonesInfo" role="status"></p>
+    </form>
 
     <form id="nameForm" class="form">
       <h3>Dein Name</h3>
@@ -126,13 +139,15 @@
         <label>Minuten<input name="minutes" type="number" min="1" max="240" value="10" required></label>
         <button type="submit">Hinzufügen</button>
       </div>
+      <button type="button" id="closingSplitBtn">In kleine Zonen zerlegen</button>
     </form>
+    <div id="closingSplitBox" class="form" hidden></div>
 
     <button type="button" id="closingDoneBtn" class="primary wide">Gute Nacht</button>
     <p class="note" id="closingBye" role="status"></p>
     <button type="button" id="closingBackBtn" class="wide">Zurück zum Tag</button>
   </section>
 </main>
-<script type="module" src="src/app.js?v=7"></script>
+<script type="module" src="src/app.js?v=9"></script>
 </body>
 </html>
