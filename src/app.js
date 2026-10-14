@@ -289,6 +289,11 @@ async function loadWeather(lat, lon) {
   }
 }
 
+if (window.navigator.standalone === true) {
+  $('ctxHint').textContent =
+    'Das ist die Home-Bildschirm-App. Sie hat einen eigenen Speicher, getrennt von Safari. Der Wecker öffnet Safari und sieht diese Aufgaben nicht. Lege das Symbol neu an und schalte dabei "Als Web-App öffnen" aus.';
+}
+
 setupForms();
 render();
 locate();

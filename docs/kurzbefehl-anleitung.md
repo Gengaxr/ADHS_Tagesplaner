@@ -34,11 +34,13 @@ Diese Automation gibt es nur auf dem iPhone, nicht am Mac.
 
 ## 3. Zum Home-Bildschirm hinzufügen
 
-Adresse in **Safari** öffnen, Teilen-Menü, **Zum Home-Bildschirm**. Starte die Seite danach von dort, so bleiben deine Aufgaben und Anker sicher gespeichert.
+Adresse in **Safari** öffnen, Teilen-Menü, **Zum Home-Bildschirm**. Schalte dort **"Als Web-App öffnen" aus**, dann **Hinzufügen**.
+
+Warum: Eine Home-Bildschirm-App hat auf dem iPhone einen eigenen Speicher, getrennt von Safari. Der Wecker öffnet die Seite in Safari. Nur wenn auch dein Symbol die Seite in Safari öffnet, sehen beide dieselben Aufgaben, Anker und denselben Namen.
 
 ## Gut zu wissen
 
-- Die Seite öffnet sich im **Standardbrowser** deines iPhones. Wenn das Chrome ist, installiere die Seite am besten aus Safari.
+- Die Seite öffnet sich im **Standardbrowser** deines iPhones. Der sollte **Safari** sein, denn Chrome und Safari haben je einen eigenen Speicher.
 - Vorlesen geht nur nach einem **Tipp auf "Vorlesen"**, das erlaubt iOS nicht anders.
 - Eine andere Stimme wählst du unten auf der Seite unter "Aufgaben und Anker", Abschnitt "Stimme". Bessere Stimmen lädst du in den iPhone-Einstellungen unter Bedienungshilfen, Gesprochene Inhalte, Stimmen, Deutsch.
 - Aufgaben und Anker legst du ebenfalls unten auf der Seite an. Sie bleiben nur auf diesem iPhone.
