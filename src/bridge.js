@@ -19,6 +19,10 @@ function parseOne(part) {
   }
   const [start, end] = head.split('-');
   if (!TIME.test(start ?? '') || !TIME.test(end ?? '')) return null;
+  // Ganztägige Kalendertermine kommen aus Kurzbefehlen als 00:00 bis 23:59 oder 00:00 bis 00:00
+  if (start === '00:00' && (end === '23:59' || end === '00:00')) {
+    return { title, start: '00:00', end: '23:59', allDay: true };
+  }
   return { title, start, end };
 }
 

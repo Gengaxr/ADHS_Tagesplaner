@@ -1,9 +1,9 @@
-import { parseEventsParam } from './bridge.js?v=3';
-import { buildBriefing } from './briefing.js?v=3';
-import { createStore } from './store.js?v=3';
-import { fetchWeather } from './weather.js?v=3';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=3';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=3';
+import { parseEventsParam } from './bridge.js?v=4';
+import { buildBriefing } from './briefing.js?v=4';
+import { createStore } from './store.js?v=4';
+import { fetchWeather } from './weather.js?v=4';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=4';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];

@@ -28,3 +28,11 @@ test('leere oder kaputte Eingabe ergibt eine leere Liste', () => {
   assert.deepEqual(parseEventsParam('?events=xx'), []);
   assert.deepEqual(parseEventsParam('?events=25:99-26:00|Quatsch'), []);
 });
+
+test('Termine, die den ganzen Tag dauern (00:00 bis 23:59 oder 00:00), gelten als ganztägig', () => {
+  assert.deepEqual(parseEventsParam('?events=00:00-23:59|Geburtstag;00:00-00:00|Feiertag'), [
+    { title: 'Geburtstag', start: '00:00', end: '23:59', allDay: true },
+    { title: 'Feiertag', start: '00:00', end: '23:59', allDay: true },
+  ]);
+  assert.equal(parseEventsParam('?events=00:00-01:00|Nachtschicht')[0].allDay, undefined);
+});
