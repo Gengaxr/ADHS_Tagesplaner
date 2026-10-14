@@ -6,3 +6,7 @@ Ein kleiner Tagesplaner als Web-App fürs iPhone, gebaut für ADHS: Morgenbriefi
 - Aufgaben, Anker und Name liegen nur im Browser-Speicher des Geräts, nicht in diesem Repository.
 - Einrichtung auf dem iPhone: [docs/kurzbefehl-anleitung.md](docs/kurzbefehl-anleitung.md)
 - Tests: `npm test` (Node 20 oder neuer)
+
+## Hinweis für Änderungen
+
+iOS Safari speichert Dateien zwischen. Wer etwas ändert, erhöht die Versionsnummer `?v=N` in `index.html` und in den `import`-Zeilen von `src/app.js`, sonst sieht man die alte Fassung.
