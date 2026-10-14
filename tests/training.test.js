@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   DEFAULT_SESSIONS, DEFAULT_DAYS, parseExercises, formatExercises, targetInfo, sessionForDay,
   startWorkout, currentExercise, isFinished, completeSet, skipRest, restLeftMs,
-  progressHint, workoutSummary, logEntry, lastResult,
+  progressHint, workoutSummary, logEntry, lastResult, tipFor, NEXT_STAGE,
 } from '../src/training.js';
 
 const EX = [
@@ -116,4 +116,30 @@ test('logEntry, lastResult und workoutSummary vergleichen mit dem letzten Mal', 
   assert.equal(sum.minutes, 25);
   assert.deepEqual(sum.lines[0].sets, [10, 8]);
   assert.deepEqual(sum.lines[0].last, [10, 8]);
+});
+
+test('L-Sit und Handstand stehen im Plan, Fertigkeiten vor den schweren Übungen', () => {
+  const names = (s) => DEFAULT_SESSIONS[s].map((e) => e.name);
+  assert.ok(names('Push').some((n) => /Handstand/.test(n)));
+  assert.ok(names('Ganzkörper').some((n) => /Handstand/.test(n)));
+  assert.ok(names('Pull').some((n) => /Stütz auf Parallettes/.test(n)));
+  assert.ok(names('Beine und Core').some((n) => /L-Sit/.test(n)));
+  assert.match(names('Push')[1], /Handstand/);
+  assert.match(names('Beine und Core')[1], /L-Sit/);
+  for (const s of Object.keys(DEFAULT_SESSIONS)) assert.ok(DEFAULT_SESSIONS[s].length <= 8, s);
+});
+
+test('progressHint nennt die nächste Stufe, wenn es eine gibt', () => {
+  const lsit = { name: 'L-Sit auf Parallettes, Knie angewinkelt', sets: 4, target: '10-20 s', rest: 60 };
+  assert.match(progressHint(lsit, [20, 20, 20, 21]), /Nächste Stufe: Einbeiniger L-Sit/);
+  const plain = { name: 'Wadenheben', sets: 3, target: '15-20', rest: 45 };
+  assert.match(progressHint(plain, [20, 20, 20]), /schwerer/);
+  for (const name of Object.keys(NEXT_STAGE)) assert.ok(NEXT_STAGE[name].length > 3);
+});
+
+test('tipFor liefert Hinweise für L-Sit-Stufen und Handstand, sonst null', () => {
+  assert.match(tipFor('Wand-Handstand, Brust zur Wand'), /Handlänge|Handgelenke/);
+  assert.match(tipFor('L-Sit auf Parallettes, Knie angewinkelt'), /Knie/);
+  assert.equal(tipFor('Wadenheben'), null);
+  for (const name of Object.keys(NEXT_STAGE)) assert.equal((tipFor(name) ?? '').includes('!'), false);
 });

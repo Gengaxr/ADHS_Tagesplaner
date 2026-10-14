@@ -1,12 +1,15 @@
-const WARMUP = { name: 'Aufwärmen: Arm- und Schulterkreisen, Hampelmann', sets: 1, target: '3 min', rest: 0 };
+const WARMUP = { name: 'Aufwärmen: Arm-, Schulter- und Handgelenkkreisen, Hampelmann', sets: 1, target: '3 min', rest: 0 };
+const HANDSTAND = 'Wand-Handstand, Brust zur Wand';
+const LSIT = 'L-Sit auf Parallettes, Knie angewinkelt';
+const SUPPORT = 'Stütz auf Parallettes, Schultern runterdrücken';
 
-/** Einheiten für Philipps Geräte: Klimmzugstange im Türrahmen, Mini-Parallettes, 2 mal 2,5 kg Knöchelgewichte, 2 kg Gewichtsball. */
+/** Einheiten für Philipps Geräte: Klimmzugstange im Türrahmen, Mini-Parallettes, 2 mal 2,5 kg Knöchelgewichte, 2 kg Gewichtsball. Fertigkeiten (Handstand, L-Sit) stehen früh, solange du frisch bist. */
 export const DEFAULT_SESSIONS = {
   Push: [
     WARMUP,
+    { name: HANDSTAND, sets: 4, target: '15-40 s', rest: 60 },
     { name: 'Liegestütze auf Parallettes', sets: 3, target: '6-12', rest: 90 },
     { name: 'Pike-Liegestütze, Hüfte hoch', sets: 3, target: '5-10', rest: 90 },
-    { name: 'Diamant-Liegestütze', sets: 3, target: '5-10', rest: 90 },
     { name: 'Seitheben mit Knöchelgewichten in den Händen', sets: 3, target: '10-15', rest: 60 },
     { name: 'Plank', sets: 3, target: '30-60 s', rest: 60 },
   ],
@@ -15,20 +18,21 @@ export const DEFAULT_SESSIONS = {
     { name: 'Klimmzüge an der Türrahmenstange', sets: 3, target: '3-8', rest: 120 },
     { name: 'Rudern an der tief gestellten Stange', sets: 3, target: '6-12', rest: 90 },
     { name: 'Bizeps-Curls mit Knöchelgewichten in den Händen', sets: 3, target: '10-15', rest: 60 },
-    { name: 'Hang an der Stange', sets: 3, target: '20-45 s', rest: 60 },
+    { name: SUPPORT, sets: 3, target: '15-30 s', rest: 60 },
     { name: 'Hängendes Beinheben, Knie angewinkelt', sets: 3, target: '5-10', rest: 60 },
   ],
   'Beine und Core': [
     WARMUP,
+    { name: LSIT, sets: 4, target: '10-20 s', rest: 60 },
     { name: 'Kniebeugen mit Gewichtsball', sets: 3, target: '10-15', rest: 90 },
     { name: 'Ausfallschritte mit Knöchelgewichten', sets: 3, target: '8-12', rest: 90 },
     { name: 'Einbeinige Glute Bridge', sets: 3, target: '8-12', rest: 60 },
     { name: 'Wadenheben', sets: 3, target: '15-20', rest: 45 },
-    { name: 'L-Sit auf Parallettes, Knie angewinkelt', sets: 4, target: '10-20 s', rest: 60 },
     { name: 'Russian Twist mit Gewichtsball', sets: 3, target: '16-24', rest: 45 },
   ],
   Ganzkörper: [
     WARMUP,
+    { name: HANDSTAND, sets: 3, target: '20-40 s', rest: 60 },
     { name: 'Klimmzüge an der Türrahmenstange', sets: 3, target: '3-8', rest: 120 },
     { name: 'Liegestütze auf Parallettes', sets: 3, target: '6-12', rest: 90 },
     { name: 'Kniebeugen mit Gewichtsball', sets: 3, target: '10-15', rest: 90 },
@@ -36,6 +40,24 @@ export const DEFAULT_SESSIONS = {
     { name: 'Plank', sets: 3, target: '30-60 s', rest: 60 },
   ],
 };
+
+/** Nächste Stufe, wenn alle Sätze am oberen Ende des Ziels waren. */
+export const NEXT_STAGE = {
+  [SUPPORT]: LSIT,
+  [LSIT]: 'Einbeiniger L-Sit (ein Bein gestreckt)',
+  [HANDSTAND]: 'Handstand mit Rücken zur Wand, kontrolliert hochkicken',
+  'Pike-Liegestütze, Hüfte hoch': 'Pike-Liegestütze mit erhöhten Füßen',
+  'Liegestütze auf Parallettes': 'Liegestütze mit erhöhten Füßen',
+};
+
+const TIPS = {
+  [HANDSTAND]: 'Eine Handlänge Abstand zur Wand, Finger gespreizt, Arme gestreckt, Bauch zur Wand und den Körper lang machen. Wärm die Handgelenke vorher auf und steig kontrolliert ab, bevor du wackelst.',
+  [LSIT]: 'Knie zur Brust ziehen, Po vom Boden heben, Arme gestreckt, Schultern von den Ohren wegdrücken. Auch ein kurzes Anheben zählt.',
+  [SUPPORT]: 'Arme gestreckt, Schultern runterdrücken, Brust raus, Po nah an den Parallettes. Das ist die Grundlage für den L-Sit.',
+};
+
+/** Kurzer Hinweis zur Ausführung, falls es einen gibt. */
+export const tipFor = (name) => TIPS[name] ?? null;
 
 /** Wochentag (0 = Sonntag) auf Einheit: Montag, Mittwoch, Freitag und Sonntag. */
 export const DEFAULT_DAYS = { 1: 'Push', 3: 'Pull', 5: 'Beine und Core', 0: 'Ganzkörper' };
@@ -99,6 +121,8 @@ export function progressHint(ex, sets) {
   const info = targetInfo(ex.target);
   if (!info || info.unit === 'Min') return '';
   if (sets.length >= ex.sets && sets.every((v) => v >= info.high)) {
+    const next = NEXT_STAGE[ex.name];
+    if (next) return `Alle Sätze am oberen Ende. Nächste Stufe: ${next}.`;
     return 'Alle Sätze am oberen Ende. Nächstes Mal schwerer: mehr Gewicht, langsameres Tempo oder eine schwerere Variante.';
   }
   if (sets.some((v) => v < info.low)) return 'Ein Satz war unter dem Ziel. Bleib bei dieser Stufe und mach sauber weiter.';

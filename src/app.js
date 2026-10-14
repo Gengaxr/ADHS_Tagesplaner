@@ -1,18 +1,18 @@
-import { parseEventsParam } from './bridge.js?v=15';
-import { buildBriefing } from './briefing.js?v=15';
-import { createStore } from './store.js?v=15';
-import { fetchWeather } from './weather.js?v=15';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=15';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=15';
-import { buildClosing, isFeierabendTime } from './closing.js?v=15';
-import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=15';
+import { parseEventsParam } from './bridge.js?v=16';
+import { buildBriefing } from './briefing.js?v=16';
+import { createStore } from './store.js?v=16';
+import { fetchWeather } from './weather.js?v=16';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=16';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=16';
+import { buildClosing, isFeierabendTime } from './closing.js?v=16';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=16';
 import {
   DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount, shortcutTimerUrl,
-} from './visit.js?v=15';
+} from './visit.js?v=16';
 import {
   DEFAULT_SESSIONS, DEFAULT_DAYS, parseExercises, formatExercises, targetInfo, sessionForDay, startWorkout,
-  currentExercise, completeSet, skipRest, restLeftMs, logEntry, lastResult, workoutSummary,
-} from './training.js?v=15';
+  currentExercise, completeSet, skipRest, restLeftMs, logEntry, lastResult, workoutSummary, tipFor,
+} from './training.js?v=16';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -640,6 +640,7 @@ function renderTraining() {
       const range = info.low === info.high ? String(info.low) : `${info.low}\u2013${info.high}`;
       $('trainTarget').textContent = `Ziel: ${range} ${UNIT_WORD[info.unit]}`;
       $('trainLast').textContent = last ? `Letztes Mal: ${last.join(', ')}` : '';
+      $('trainTip').textContent = tipFor(ex.name) || '';
       const input = $('trainValue');
       input.parentElement.hidden = info.unit === 'Min';
       input.value = String(last?.[w.setIndex] ?? info.low);
