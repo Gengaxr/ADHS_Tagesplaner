@@ -91,3 +91,14 @@ button.wide { width: 100%; margin-top: 12px; }
 .list li.done span { color: var(--muted); }
 [hidden] { display: none !important; }
 .list li.done span::before { content: "\2713\00a0\00a0"; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.chips button { min-width: 64px; }
+.chips button[aria-pressed="true"] { background: var(--btn); color: var(--btn-tx); border-color: var(--btn); }
+#visitView .count { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 8px 0 12px; }
+#visitView .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+#visitView .what { font-size: 20px; font-weight: 600; margin: 2px 0; }
+#visitView .dur, #visitView .label, #visitView .next { color: var(--muted); font-size: 14px; }
+#visitView .dur { margin-bottom: 12px; font-size: 15px; }
+#visitView .next { margin-top: 12px; }
+#visitView button.primary { width: 100%; }

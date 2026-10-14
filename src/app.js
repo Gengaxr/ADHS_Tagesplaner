@@ -1,11 +1,14 @@
-import { parseEventsParam } from './bridge.js?v=9';
-import { buildBriefing } from './briefing.js?v=9';
-import { createStore } from './store.js?v=9';
-import { fetchWeather } from './weather.js?v=9';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=9';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=9';
-import { buildClosing, isFeierabendTime } from './closing.js?v=9';
-import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=9';
+import { parseEventsParam } from './bridge.js?v=10';
+import { buildBriefing } from './briefing.js?v=10';
+import { createStore } from './store.js?v=10';
+import { fetchWeather } from './weather.js?v=10';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=10';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=10';
+import { buildClosing, isFeierabendTime } from './closing.js?v=10';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=10';
+import {
+  DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount,
+} from './visit.js?v=10';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -45,7 +48,7 @@ const tomorrow = () => {
   return isoDate(d);
 };
 
-const state = { view: params.get('feierabend') === '1' ? 'closing' : 'day', weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
+const state = { visit: null, visitEnded: false, visitTick: null, view: params.get('feierabend') === '1' ? 'closing' : 'day', weather: null, events: parseEventsParam(location.search), timer: null, tick: null, lastBriefing: null };
 
 // Termine kommen nur über den Kurzbefehl in der Adresse. Für den Tag merken, damit das Symbol sie auch zeigt.
 if (params.has('events')) {
@@ -211,11 +214,16 @@ function renderClosing() {
 function render() {
   const b = currentBriefing();
   const closing = state.view === 'closing';
-  $('dayView').hidden = closing;
+  const visiting = state.view === 'visit';
+  const day = !closing && !visiting;
+  $('dayView').hidden = !day;
   $('closingView').hidden = !closing;
-  $('closingBtn').hidden = closing;
-  $('speakBtn').hidden = closing;
-  $('lateHint').hidden = closing || !isFeierabendTime(clock()) || read('planer.feierabend') === today();
+  $('visitView').hidden = !visiting;
+  $('closingBtn').hidden = !day;
+  $('visitBtn').hidden = !day;
+  $('speakBtn').hidden = !day;
+  $('lateHint').hidden = !day || !isFeierabendTime(clock()) || read('planer.feierabend') === today();
+  if (visiting) renderVisit();
   if (closing) renderClosing();
   state.lastBriefing = b;
   $('dateLabel').textContent = b.dateLabel;
@@ -399,14 +407,15 @@ function setupSplit() {
   });
   const room = $('zonesRoom');
   const text = $('zonesText');
-  for (const name of Object.keys(DEFAULT_ROOMS)) {
-    const o = el('option', name);
+  const ALL = { ...DEFAULT_ROOMS, Besuch: DEFAULT_VISIT_STEPS };
+  for (const name of Object.keys(ALL)) {
+    const o = el('option', name === 'Besuch' ? 'Besuch (Reihenfolge)' : name);
     o.value = name;
     room.append(o);
   }
   const load = () => {
     const custom = store.getTemplates()[room.value];
-    text.value = formatZones(custom?.length ? custom : DEFAULT_ROOMS[room.value]);
+    text.value = formatZones(custom?.length ? custom : ALL[room.value]);
     $('zonesInfo').textContent = custom?.length ? 'Eigene Zonen.' : 'Standardzonen.';
   };
   room.addEventListener('change', load);
@@ -426,6 +435,120 @@ function setupSplit() {
     store.resetTemplate(room.value);
     load();
   });
+}
+
+function visitSteps() {
+  const custom = store.getTemplates().Besuch;
+  return custom?.length ? custom : DEFAULT_VISIT_STEPS;
+}
+
+function saveVisit() {
+  if (state.visit) write('planer.visit', JSON.stringify(state.visit));
+  else write('planer.visit', '');
+}
+
+function renderVisit() {
+  const v = state.visit;
+  const phase = !v ? 'choose' : state.visitEnded ? 'summary' : 'run';
+  $('visitChoose').hidden = phase !== 'choose';
+  $('visitRun').hidden = phase !== 'run';
+  $('visitSummary').hidden = phase !== 'summary';
+  if (phase === 'choose') {
+    const minutes = Number($('visitMinutes').value) || 20;
+    const steps = visitSteps();
+    const n = fitCount(steps, minutes);
+    $('visitFit').textContent = n
+      ? `In ${minutes} Minuten schaffst du etwa ${n} ${n === 1 ? 'Schritt' : 'Schritte'}. Du machst immer nur einen auf einmal.`
+      : 'Es gibt keine Schritte. Lege unter "Zonen bearbeiten" die Besuch-Reihenfolge an.';
+    for (const b of $('visitChips').children) b.setAttribute('aria-pressed', String(Number(b.dataset.m) === minutes));
+  }
+  if (phase === 'run') {
+    updateVisitCountdown();
+    const step = currentStep(v);
+    if (!step) {
+      endVisit();
+      return;
+    }
+    $('visitStep').textContent = step.title;
+    $('visitStepMin').textContent = `${step.minutes} Minuten, nur das`;
+    const next = v.steps[v.index + 1];
+    $('visitNext').textContent = next ? `Danach: ${next.title}` : 'Das ist der letzte Schritt.';
+    $('visitProgress').textContent = v.done.length ? `Bisher geschafft: ${v.done.length}` : '';
+  }
+  if (phase === 'summary') {
+    const s = visitSummary(v, Date.now());
+    $('visitSummaryText').textContent = s.text;
+    $('visitDoneList').replaceChildren(...s.doneTitles.map((t) => closingItem(t, [], 'done')));
+    $('visitLeftBox').hidden = s.remainingTitles.length === 0;
+    $('visitLeftList').replaceChildren(...s.remainingTitles.map((t) => closingItem(t, [])));
+  }
+}
+
+function updateVisitCountdown() {
+  const v = state.visit;
+  if (!v) return;
+  const left = msLeft(v, Date.now());
+  $('visitCountdown').textContent = left > 0 ? `Besuch in ${formatMmSs(left)}` : 'Die Zeit ist um. Mach fertig, was du gerade tust.';
+}
+
+function endVisit() {
+  clearInterval(state.visitTick);
+  state.visitEnded = true;
+  render();
+}
+
+function beginVisit(minutes) {
+  state.visit = startVisit(Date.now(), minutes, visitSteps());
+  state.visitEnded = false;
+  saveVisit();
+  clearInterval(state.visitTick);
+  state.visitTick = setInterval(updateVisitCountdown, 500);
+  render();
+}
+
+function leaveVisit() {
+  clearInterval(state.visitTick);
+  state.visit = null;
+  state.visitEnded = false;
+  saveVisit();
+  state.view = 'day';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function setupVisit() {
+  const chips = $('visitChips');
+  for (const m of [10, 20, 30, 45, 60]) {
+    const b = el('button', `${m} Min`);
+    b.type = 'button';
+    b.dataset.m = String(m);
+    b.addEventListener('click', () => { $('visitMinutes').value = String(m); renderVisit(); });
+    chips.append(b);
+  }
+  $('visitMinutes').addEventListener('input', renderVisit);
+  $('visitBtn').addEventListener('click', () => { state.view = 'visit'; render(); window.scrollTo(0, 0); });
+  $('visitBackBtn').addEventListener('click', leaveVisit);
+  $('visitAgainBtn').addEventListener('click', leaveVisit);
+  $('visitStartBtn').addEventListener('click', () => beginVisit(Math.min(240, Math.max(5, Number($('visitMinutes').value) || 20))));
+  $('visitDoneBtn').addEventListener('click', () => { state.visit = completeStep(state.visit); saveVisit(); render(); });
+  $('visitSkipBtn').addEventListener('click', () => { state.visit = skipStep(state.visit); saveVisit(); render(); });
+  $('visitEndBtn').addEventListener('click', endVisit);
+  // Ein laufender Besuch übersteht das Neuladen der Seite
+  try {
+    const saved = JSON.parse(read('planer.visit') || 'null');
+    if (saved && Array.isArray(saved.steps) && Date.now() < saved.endsAt + 30 * 60000) {
+      state.visit = saved;
+      state.view = 'visit';
+      state.visitTick = setInterval(updateVisitCountdown, 500);
+    }
+  } catch {
+    // kaputter Stand: ignorieren
+  }
+  const direct = Number(params.get('besuch'));
+  if (direct >= 5 && direct <= 240) {
+    state.view = 'visit';
+    beginVisit(direct);
+  }
 }
 
 function setupClosing() {
@@ -476,5 +599,6 @@ if (window.navigator.standalone === true) {
 setupForms();
 setupSplit();
 setupClosing();
+setupVisit();
 render();
 locate();

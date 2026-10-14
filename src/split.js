@@ -7,6 +7,7 @@ export const DEFAULT_ROOMS = {
     { title: 'Müll und Geschirr einsammeln', minutes: 5 },
     { title: 'Couch ordnen, Decken und Kissen', minutes: 5 },
     { title: 'Couchtisch freiräumen', minutes: 5 },
+    { title: 'Sideboard mit TV freiräumen und abwischen', minutes: 5 },
     { title: 'Schreibtisch aufräumen', minutes: 10 },
     { title: 'Boden freiräumen, Dinge wegbringen', minutes: 10 },
   ],

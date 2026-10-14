@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Planer">
 <meta name="theme-color" content="#f6f5f1">
 <title>Mein Tag</title>
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 </head>
@@ -22,6 +22,7 @@
     <div class="actions">
       <button type="button" id="speakBtn" class="primary">Vorlesen</button>
       <button type="button" id="closingBtn">Feierabend</button>
+      <button type="button" id="visitBtn">Besuch kommt</button>
     </div>
   </header>
   <p class="hint" id="speakHint" role="status"></p>
@@ -147,7 +148,44 @@
     <p class="note" id="closingBye" role="status"></p>
     <button type="button" id="closingBackBtn" class="wide">Zurück zum Tag</button>
   </section>
+
+  <section id="visitView" hidden aria-labelledby="visitTitle">
+    <h2 id="visitTitle">Besuch kommt</h2>
+
+    <div id="visitChoose">
+      <p>In wie vielen Minuten ist der Besuch da?</p>
+      <div class="chips" id="visitChips"></div>
+      <label>Oder eigene Minuten<input id="visitMinutes" type="number" min="5" max="240" value="20"></label>
+      <p class="note" id="visitFit"></p>
+      <button type="button" id="visitStartBtn" class="primary wide">Starten</button>
+      <button type="button" id="visitBackBtn" class="wide">Zurück zum Tag</button>
+    </div>
+
+    <div id="visitRun" hidden>
+      <p class="count" id="visitCountdown" role="timer"></p>
+      <div class="card">
+        <p class="label">Jetzt dran</p>
+        <p class="what" id="visitStep"></p>
+        <p class="dur" id="visitStepMin"></p>
+        <button type="button" id="visitDoneBtn" class="primary">Geschafft</button>
+        <button type="button" id="visitSkipBtn" class="wide">Überspringen</button>
+        <p class="next" id="visitNext"></p>
+      </div>
+      <p class="done-count" id="visitProgress" role="status"></p>
+      <button type="button" id="visitEndBtn" class="wide">Der Besuch ist da</button>
+    </div>
+
+    <div id="visitSummary" hidden>
+      <p class="summary" id="visitSummaryText"></p>
+      <ul class="list" id="visitDoneList"></ul>
+      <div id="visitLeftBox">
+        <h3>Noch offen, das darf warten</h3>
+        <ul class="list" id="visitLeftList"></ul>
+      </div>
+      <button type="button" id="visitAgainBtn" class="wide">Zurück zum Tag</button>
+    </div>
+  </section>
 </main>
-<script type="module" src="src/app.js?v=9"></script>
+<script type="module" src="src/app.js?v=10"></script>
 </body>
 </html>
