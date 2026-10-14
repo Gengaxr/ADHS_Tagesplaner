@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Planer">
 <meta name="theme-color" content="#f6f5f1">
 <title>Mein Tag</title>
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=12">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 </head>
@@ -157,6 +157,7 @@
       <div class="chips" id="visitChips"></div>
       <label>Oder eigene Minuten<input id="visitMinutes" type="number" min="5" max="240" value="20"></label>
       <p class="note" id="visitFit"></p>
+      <label class="check"><input type="checkbox" id="visitTimerBox"> Auch einen iPhone-Timer starten (nur bei 10, 20, 30, 45 oder 60 Minuten). Er läuft auf dem Sperrbildschirm und klingelt, auch wenn die Seite zu ist.</label>
       <button type="button" id="visitStartBtn" class="primary wide">Starten</button>
       <button type="button" id="visitBackBtn" class="wide">Zurück zum Tag</button>
     </div>
@@ -186,6 +187,6 @@
     </div>
   </section>
 </main>
-<script type="module" src="src/app.js?v=10"></script>
+<script type="module" src="src/app.js?v=12"></script>
 </body>
 </html>

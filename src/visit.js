@@ -58,3 +58,13 @@ export function fitCount(steps, minutes) {
   }
   return Math.max(1, n);
 }
+
+/** Minuten, für die es einen fertigen Kurzbefehl "Besuch-Timer N" gibt. */
+export const TIMER_MINUTES = [10, 20, 30, 45, 60];
+
+/** Adresse, die den Kurzbefehl "Besuch-Timer N" startet und danach zur Seite zurückkehrt; null ohne passenden Kurzbefehl. */
+export function shortcutTimerUrl(minutes, returnUrl) {
+  if (!TIMER_MINUTES.includes(minutes)) return null;
+  const q = new URLSearchParams({ name: `Besuch-Timer ${minutes}`, 'x-success': returnUrl });
+  return `shortcuts://x-callback-url/run-shortcut?${q.toString().replace(/\+/g, '%20')}`;
+}

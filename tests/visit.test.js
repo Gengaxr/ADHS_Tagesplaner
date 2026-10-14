@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount,
+  DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount, shortcutTimerUrl, TIMER_MINUTES,
 } from '../src/visit.js';
 
 const MIN = 60000;
@@ -67,4 +67,18 @@ test('fitCount zählt, wie viele Schritte in die Zeit passen, mindestens einer',
   assert.equal(fitCount(steps, 10), 2);
   assert.equal(fitCount(steps, 4), 1);
   assert.equal(fitCount([], 20), 0);
+});
+
+test('shortcutTimerUrl startet den Kurzbefehl "Besuch-Timer N" und kehrt zur Seite zurück', () => {
+  const url = shortcutTimerUrl(20, 'https://example.github.io/app/');
+  assert.ok(url.startsWith('shortcuts://x-callback-url/run-shortcut?'));
+  const q = new URLSearchParams(url.split('?')[1]);
+  assert.equal(q.get('name'), 'Besuch-Timer 20');
+  assert.equal(q.get('x-success'), 'https://example.github.io/app/');
+  assert.equal(url.includes('+'), false);
+});
+
+test('shortcutTimerUrl gibt null zurück, wenn es keinen Kurzbefehl für die Minuten gibt', () => {
+  assert.equal(shortcutTimerUrl(25, 'https://example.github.io/app/'), null);
+  assert.deepEqual(TIMER_MINUTES, [10, 20, 30, 45, 60]);
 });

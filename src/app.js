@@ -1,14 +1,14 @@
-import { parseEventsParam } from './bridge.js?v=10';
-import { buildBriefing } from './briefing.js?v=10';
-import { createStore } from './store.js?v=10';
-import { fetchWeather } from './weather.js?v=10';
-import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=10';
-import { createTimer, remainingMs, formatMmSs } from './timer.js?v=10';
-import { buildClosing, isFeierabendTime } from './closing.js?v=10';
-import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=10';
+import { parseEventsParam } from './bridge.js?v=12';
+import { buildBriefing } from './briefing.js?v=12';
+import { createStore } from './store.js?v=12';
+import { fetchWeather } from './weather.js?v=12';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js?v=12';
+import { createTimer, remainingMs, formatMmSs } from './timer.js?v=12';
+import { buildClosing, isFeierabendTime } from './closing.js?v=12';
+import { suggestSplit, parseZones, formatZones, DEFAULT_ROOMS } from './split.js?v=12';
 import {
-  DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount,
-} from './visit.js?v=10';
+  DEFAULT_VISIT_STEPS, startVisit, currentStep, completeStep, skipStep, msLeft, visitSummary, fitCount, shortcutTimerUrl,
+} from './visit.js?v=12';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
@@ -504,6 +504,9 @@ function beginVisit(minutes) {
   clearInterval(state.visitTick);
   state.visitTick = setInterval(updateVisitCountdown, 500);
   render();
+  const timerUrl = read('planer.visitTimer') === '1' ? shortcutTimerUrl(minutes, location.origin + location.pathname) : null;
+  // Der Kurzbefehl startet den iPhone-Timer und bringt dich zur Seite zurück; der Besuch ist bereits gespeichert
+  if (timerUrl) location.href = timerUrl;
 }
 
 function leaveVisit() {
@@ -526,6 +529,9 @@ function setupVisit() {
     chips.append(b);
   }
   $('visitMinutes').addEventListener('input', renderVisit);
+  const timerBox = $('visitTimerBox');
+  timerBox.checked = read('planer.visitTimer') === '1';
+  timerBox.addEventListener('change', () => write('planer.visitTimer', timerBox.checked ? '1' : '0'));
   $('visitBtn').addEventListener('click', () => { state.view = 'visit'; render(); window.scrollTo(0, 0); });
   $('visitBackBtn').addEventListener('click', leaveVisit);
   $('visitAgainBtn').addEventListener('click', leaveVisit);
