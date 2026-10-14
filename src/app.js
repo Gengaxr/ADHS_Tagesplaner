@@ -2,7 +2,7 @@ import { parseEventsParam } from './bridge.js';
 import { buildBriefing } from './briefing.js';
 import { createStore } from './store.js';
 import { fetchWeather } from './weather.js';
-import { toSpeechText, speak } from './speech.js';
+import { toSpeechText, speak, pickGermanVoice } from './speech.js';
 import { createTimer, remainingMs, formatMmSs } from './timer.js';
 
 const $ = (id) => document.getElementById(id);
@@ -218,6 +218,7 @@ function setupForms() {
     write('planer.name', nameInput.value.trim());
     render();
   });
+  setupVoices();
   $('exportBtn').addEventListener('click', () => {
     const box = $('exportBox');
     box.hidden = false;
@@ -227,9 +228,39 @@ function setupForms() {
   $('speakBtn').addEventListener('click', async () => {
     const hint = $('speakHint');
     hint.textContent = '';
-    const result = await speak(toSpeechText(state.lastBriefing));
+    const result = await speak(toSpeechText(state.lastBriefing), undefined, undefined, undefined, read('planer.voice') || '');
     if (result === 'blocked') hint.textContent = 'Nichts zu hören? Prüfe, ob dein iPhone stumm geschaltet ist, und die Lautstärke.';
     if (result === 'unsupported') hint.textContent = 'Dieser Browser kann nicht vorlesen.';
+  });
+}
+
+function setupVoices() {
+  const select = $('voiceSelect');
+  const fill = () => {
+    const synth = window.speechSynthesis;
+    const all = synth?.getVoices?.() ?? [];
+    const de = all.filter((v) => /^de([-_]|$)/i.test(v.lang ?? ''));
+    const wanted = read('planer.voice') || pickGermanVoice(all)?.name || '';
+    select.replaceChildren();
+    for (const v of de) {
+      const o = el('option', v.name);
+      o.value = v.name;
+      o.selected = v.name === wanted;
+      select.append(o);
+    }
+    $('voiceInfo').textContent = de.length
+      ? `${de.length} deutsche Stimmen gefunden. Bessere Stimmen lädst du in den iPhone-Einstellungen unter Bedienungshilfen, Gesprochene Inhalte, Stimmen.`
+      : 'Keine deutsche Stimme gefunden.';
+  };
+  fill();
+  window.speechSynthesis?.addEventListener?.('voiceschanged', fill);
+  $('voiceForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    write('planer.voice', select.value);
+    $('voiceInfo').textContent = 'Gespeichert.';
+  });
+  $('voiceTest').addEventListener('click', () => {
+    speak('Guten Morgen. So klingt diese Stimme.', undefined, undefined, undefined, select.value);
   });
 }
 

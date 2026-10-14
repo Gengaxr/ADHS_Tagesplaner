@@ -34,10 +34,11 @@ export function toSpeechText(b) {
 
 const isGerman = (v) => /^de([-_]|$)/i.test(v.lang ?? '');
 
-/** Wählt die natürlichste deutsche Stimme: Premium, dann Erweitert/Enhanced, dann irgendeine. */
-export function pickGermanVoice(voices) {
+/** Wählt die gewünschte deutsche Stimme, sonst die natürlichste: Premium, Erweitert/Enhanced, irgendeine. */
+export function pickGermanVoice(voices, preferredName) {
   const de = (voices ?? []).filter(isGerman);
   return (
+    (preferredName ? de.find((v) => v.name === preferredName) : undefined) ??
     de.find((v) => /premium/i.test(v.name)) ??
     de.find((v) => /erweitert|enhanced/i.test(v.name)) ??
     de[0] ??
@@ -46,12 +47,12 @@ export function pickGermanVoice(voices) {
 }
 
 /** Spricht den Text. Gibt "started", "blocked" (iOS lässt nichts hören) oder "unsupported" zurück. */
-export function speak(text, synth = globalThis.speechSynthesis, voices, waitMs = 2000) {
+export function speak(text, synth = globalThis.speechSynthesis, voices, waitMs = 2000, preferredName = '') {
   if (!synth || typeof synth.speak !== 'function') return Promise.resolve('unsupported');
   return new Promise((resolve) => {
     const u = new globalThis.SpeechSynthesisUtterance(text);
     u.lang = 'de-DE';
-    const voice = pickGermanVoice(voices ?? synth.getVoices?.() ?? []);
+    const voice = pickGermanVoice(voices ?? synth.getVoices?.() ?? [], preferredName);
     if (voice) u.voice = voice;
     let done = false;
     const finish = (r) => {

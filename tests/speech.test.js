@@ -76,3 +76,20 @@ test('speak meldet started, sobald die Sprachausgabe beginnt', async () => {
   globalThis.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } };
   assert.equal(await speak('Hallo', synth, [], 50), 'started');
 });
+
+test('pickGermanVoice nimmt die gewünschte Stimme, wenn sie vorhanden ist', () => {
+  const a = { name: 'Anna (Premium)', lang: 'de-DE' };
+  const b = { name: 'Markus', lang: 'de-DE' };
+  assert.equal(pickGermanVoice([a, b], 'Markus'), b);
+  assert.equal(pickGermanVoice([a, b], 'Gibt es nicht'), a);
+  assert.equal(pickGermanVoice([a, b], ''), a);
+});
+
+test('speak nutzt die gewünschte Stimme', async () => {
+  let used = null;
+  const synth = { cancel() {}, speak(u) { used = u.voice; setTimeout(() => u.onstart?.(), 5); } };
+  globalThis.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } };
+  const voices = [{ name: 'Anna (Premium)', lang: 'de-DE' }, { name: 'Markus', lang: 'de-DE' }];
+  await speak('Hallo', synth, voices, 50, 'Markus');
+  assert.equal(used.name, 'Markus');
+});
