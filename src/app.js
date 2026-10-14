@@ -236,24 +236,37 @@ function setupForms() {
 
 function setupVoices() {
   const select = $('voiceSelect');
+  let found = 0;
   const fill = () => {
     const synth = window.speechSynthesis;
     const all = synth?.getVoices?.() ?? [];
     const de = all.filter((v) => /^de([-_]|$)/i.test(v.lang ?? ''));
+    const list = de.length ? de : all;
+    if (list.length === found) return;
+    found = list.length;
     const wanted = read('planer.voice') || pickGermanVoice(all)?.name || '';
     select.replaceChildren();
-    for (const v of de) {
-      const o = el('option', v.name);
+    for (const v of list) {
+      const o = el('option', de.length ? v.name : `${v.name} (${v.lang})`);
       o.value = v.name;
       o.selected = v.name === wanted;
       select.append(o);
     }
-    $('voiceInfo').textContent = de.length
-      ? `${de.length} deutsche Stimmen gefunden. Bessere Stimmen lädst du in den iPhone-Einstellungen unter Bedienungshilfen, Gesprochene Inhalte, Stimmen.`
-      : 'Keine deutsche Stimme gefunden.';
+    $('voiceInfo').textContent = !all.length
+      ? 'Dein Browser meldet noch keine Stimmen. Das kann einige Sekunden dauern.'
+      : de.length
+        ? `${de.length} deutsche Stimmen gefunden (von ${all.length} insgesamt). Bessere Stimmen lädst du in den iPhone-Einstellungen unter Bedienungshilfen, Gesprochene Inhalte, Stimmen.`
+        : `Keine deutsche Stimme gefunden, es werden alle ${all.length} Stimmen gezeigt.`;
   };
   fill();
+  // iOS meldet Stimmen oft verspätet und ohne "voiceschanged": ein paar Mal nachfragen
+  let tries = 0;
+  const poll = setInterval(() => {
+    fill();
+    if (++tries >= 20) clearInterval(poll);
+  }, 500);
   window.speechSynthesis?.addEventListener?.('voiceschanged', fill);
+  select.addEventListener('pointerdown', fill);
   $('voiceForm').addEventListener('submit', (e) => {
     e.preventDefault();
     write('planer.voice', select.value);
