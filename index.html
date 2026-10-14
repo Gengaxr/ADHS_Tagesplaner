@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planer">
+<meta name="theme-color" content="#f6f5f1">
+<title>Mein Tag</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <p class="date" id="dateLabel"></p>
+      <h1 id="greeting">Guten Morgen</h1>
+      <p class="weather" id="weatherLine"></p>
+    </div>
+    <button type="button" id="speakBtn" class="primary">Vorlesen</button>
+  </header>
+  <p class="hint" id="speakHint" role="status"></p>
+
+  <section aria-labelledby="bandTitle">
+    <h2 id="bandTitle">Dein Tag</h2>
+    <p class="note" id="emptyNote"></p>
+    <ol class="band" id="band"></ol>
+    <p class="more" id="moreLine"></p>
+  </section>
+
+  <section class="step" aria-labelledby="stepTitle">
+    <h2 id="stepTitle">Jetzt dran</h2>
+    <div id="stepBody"></div>
+    <p class="done-count" id="doneCount" role="status"></p>
+  </section>
+
+  <details class="manage" id="manage">
+    <summary>Aufgaben und Anker</summary>
+
+    <form id="taskForm" class="form">
+      <h3>Aufgabe hinzufügen</h3>
+      <label>Was?<input name="title" required maxlength="80" placeholder="Wäsche in die Maschine"></label>
+      <div class="row">
+        <label>Minuten<input name="minutes" type="number" min="1" max="240" value="10" required></label>
+        <label>Wann?
+          <select name="when"><option value="today">heute</option><option value="tomorrow">morgen</option></select>
+        </label>
+      </div>
+      <label>Erster kleiner Schritt (optional)<input name="firstStep" maxlength="80" placeholder="Nur die Wäsche vom Boden nehmen"></label>
+      <button type="submit">Hinzufügen</button>
+    </form>
+
+    <h3>Aufgaben heute und morgen</h3>
+    <ul class="list" id="taskList"></ul>
+
+    <form id="anchorForm" class="form">
+      <h3>Anker hinzufügen</h3>
+      <label>Was?<input name="title" required maxlength="80" placeholder="Training Push"></label>
+      <div class="row">
+        <label>Uhrzeit<input name="time" type="time" required value="11:00"></label>
+        <label>Minuten<input name="minutes" type="number" min="1" max="600" value="45" required></label>
+      </div>
+      <fieldset>
+        <legend>An diesen Tagen</legend>
+        <div class="days" id="days"></div>
+      </fieldset>
+      <button type="submit">Hinzufügen</button>
+    </form>
+
+    <h3>Deine Anker</h3>
+    <ul class="list" id="anchorList"></ul>
+
+    <form id="nameForm" class="form">
+      <h3>Dein Name</h3>
+      <label>Für die Begrüßung<input name="name" maxlength="30" autocomplete="given-name"></label>
+      <button type="submit">Speichern</button>
+    </form>
+
+    <h3>Export</h3>
+    <button type="button" id="exportBtn">Daten als Text zeigen</button>
+    <textarea id="exportBox" readonly rows="6" hidden aria-label="Exportierte Daten"></textarea>
+  </details>
+</main>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
