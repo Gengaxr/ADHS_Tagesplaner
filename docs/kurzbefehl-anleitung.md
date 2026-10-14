@@ -2,7 +2,7 @@
 
 Das Briefing ist eine Web-Seite. Ein Kurzbefehl holt morgens deine Termine aus dem Kalender, gibt sie an die Seite weiter und öffnet sie, sobald du deinen Wecker ausschaltest. Die Namen der Menüpunkte in iOS 27 können leicht von dieser Anleitung abweichen. Such dann nach dem ähnlichsten Namen.
 
-Die Adresse der Seite steht im Folgenden als `ADRESSE`, zum Beispiel `https://DEIN-NAME.github.io/adhs-planer/`. Kopiere sie genau, mit `https`, und achte auf den Schrägstrich am Ende.
+Die Adresse der Seite steht im Folgenden als `ADRESSE` und lautet `https://gengaxr.github.io/ADHS_Tagesplaner/`. Kopiere sie genau, mit `https`, und achte auf den Schrägstrich am Ende.
 
 ## 1. Voraussetzung
 
