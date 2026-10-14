@@ -68,3 +68,9 @@ export function speak(text, synth = globalThis.speechSynthesis, voices, waitMs =
     setTimeout(() => finish('blocked'), waitMs);
   });
 }
+
+/** Adresse, die den Kurzbefehl `name` startet und ihm den Text als Eingabe gibt (für bessere Stimmen). */
+export function shortcutSpeakUrl(text, name) {
+  const q = new URLSearchParams({ name, input: 'text', text });
+  return `shortcuts://run-shortcut?${q.toString().replace(/\+/g, '%20')}`;
+}

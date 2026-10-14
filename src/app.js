@@ -2,12 +2,13 @@ import { parseEventsParam } from './bridge.js';
 import { buildBriefing } from './briefing.js';
 import { createStore } from './store.js';
 import { fetchWeather } from './weather.js';
-import { toSpeechText, speak, pickGermanVoice } from './speech.js';
+import { toSpeechText, speak, pickGermanVoice, shortcutSpeakUrl } from './speech.js';
 import { createTimer, remainingMs, formatMmSs } from './timer.js';
 
 const $ = (id) => document.getElementById(id);
 const DAY_NAMES = [['Mo', 1], ['Di', 2], ['Mi', 3], ['Do', 4], ['Fr', 5], ['Sa', 6], ['So', 0]];
 const params = new URLSearchParams(location.search);
+const SPEAK_SHORTCUT = 'Briefing vorlesen';
 
 function el(tag, text, cls) {
   const n = document.createElement(tag);
@@ -228,6 +229,10 @@ function setupForms() {
   $('speakBtn').addEventListener('click', async () => {
     const hint = $('speakHint');
     hint.textContent = '';
+    if (read('planer.viaShortcut') === '1') {
+      location.href = shortcutSpeakUrl(toSpeechText(state.lastBriefing), SPEAK_SHORTCUT);
+      return;
+    }
     const result = await speak(toSpeechText(state.lastBriefing), undefined, undefined, undefined, read('planer.voice') || '');
     if (result === 'blocked') hint.textContent = 'Nichts zu hören? Prüfe, ob dein iPhone stumm geschaltet ist, und die Lautstärke.';
     if (result === 'unsupported') hint.textContent = 'Dieser Browser kann nicht vorlesen.';
@@ -267,12 +272,19 @@ function setupVoices() {
   }, 500);
   window.speechSynthesis?.addEventListener?.('voiceschanged', fill);
   select.addEventListener('pointerdown', fill);
+  const via = $('viaShortcut');
+  via.checked = read('planer.viaShortcut') === '1';
   $('voiceForm').addEventListener('submit', (e) => {
     e.preventDefault();
     write('planer.voice', select.value);
+    write('planer.viaShortcut', via.checked ? '1' : '0');
     $('voiceInfo').textContent = 'Gespeichert.';
   });
   $('voiceTest').addEventListener('click', () => {
+    if (via.checked) {
+      location.href = shortcutSpeakUrl('Guten Morgen. So klingt diese Stimme.', SPEAK_SHORTCUT);
+      return;
+    }
     speak('Guten Morgen. So klingt diese Stimme.', undefined, undefined, undefined, select.value);
   });
 }

@@ -93,3 +93,13 @@ test('speak nutzt die gewünschte Stimme', async () => {
   await speak('Hallo', synth, voices, 50, 'Markus');
   assert.equal(used.name, 'Markus');
 });
+
+test('shortcutSpeakUrl baut die Kurzbefehl-Adresse mit kodiertem Text', async () => {
+  const { shortcutSpeakUrl } = await import('../src/speech.js');
+  const url = shortcutSpeakUrl('Guten Morgen, Ärger & Co. 100%', 'Briefing vorlesen');
+  assert.ok(url.startsWith('shortcuts://run-shortcut?'));
+  const q = new URLSearchParams(url.split('?')[1]);
+  assert.equal(q.get('name'), 'Briefing vorlesen');
+  assert.equal(q.get('input'), 'text');
+  assert.equal(q.get('text'), 'Guten Morgen, Ärger & Co. 100%');
+});

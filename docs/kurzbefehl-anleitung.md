@@ -38,6 +38,16 @@ Adresse in **Safari** öffnen, Teilen-Menü, **Zum Home-Bildschirm**. Schalte do
 
 Warum: Eine Home-Bildschirm-App hat auf dem iPhone einen eigenen Speicher, getrennt von Safari. Der Wecker öffnet die Seite in Safari. Nur wenn auch dein Symbol die Seite in Safari öffnet, sehen beide dieselben Aufgaben, Anker und denselben Namen.
 
+## 4. Bessere Stimme über einen Kurzbefehl (optional)
+
+Safari zeigt der Seite nur die Standardstimme. Ein Kurzbefehl kann dagegen die geladenen Premium-Stimmen nutzen.
+
+1. Doppelklicke am Mac die Datei `docs/Briefing vorlesen.shortcut` aus diesem Repository und klicke in der Kurzbefehle-App auf **Kurzbefehl hinzufügen**. Er erscheint über iCloud auch auf dem iPhone.
+2. Öffne ihn auf dem iPhone, tippe in der Aktion **Text sprechen** auf den Pfeil, wähle bei **Stimme** deine Premium-Stimme und tippe auf Fertig.
+3. Auf der Seite unten bei **Stimme** den Haken bei "Mit dem Kurzbefehl Briefing vorlesen" setzen und **Speichern**.
+
+Danach startet der Knopf "Vorlesen" diesen Kurzbefehl. Safari fragt einmal, ob es Kurzbefehle öffnen darf.
+
 ## Gut zu wissen
 
 - Die Seite öffnet sich im **Standardbrowser** deines iPhones. Der sollte **Safari** sein, denn Chrome und Safari haben je einen eigenen Speicher.
